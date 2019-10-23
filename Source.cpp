@@ -24,6 +24,8 @@ static void APIENTRY openGLDebugCallback(GLenum source,
 	const GLchar* message,
 	const GLvoid* userParam);
 
+_Object::Object * cube;
+_Object::Object * chair;
 
 int main() {
 	std::cout << "Starting Up!" << std::endl << std::endl;
@@ -35,7 +37,14 @@ int main() {
 	setupRender();								
 
 	camera = new _Camera::Camera();
-	cube = new Mesh();
+	cube = new _Object::Object("cube_uv.obj");
+	chair = new _Object::Object("chair.obj");
+
+	cube->setPosition(vec3(2.0f, 0.0f, 0.0f));
+	chair->setPosition(vec3(-2.0f, 0.0f, 0.0f));
+
+
+
 	// Setup all necessary information for startup (aka. load texture, shaders, models, etc).
 	startup();		
 
@@ -124,10 +133,7 @@ void startup() {
 	//// Load main object model and shaders
 
 	// TODO: ALL OF THIS CAN GO INTO A OBJECT CLASS
-
 	// TODO: Scale Objects
-	cube->LoadModel("chair.obj");
-
 	program = glCreateProgram();
 
 	//// read shaders from files
@@ -154,7 +160,7 @@ void startup() {
 	glUseProgram(program);
 
 	// Start from the centre  
-	modelPosition = glm::vec3(10.0f, 0.0f, 0.0f); // ( R, U, D 
+	modelPosition = glm::vec3(0.0f, 0.0f, 0.0f); // ( R, U, D 
 
 	// A few optimizations.
 	glFrontFace(GL_CCW);
@@ -167,6 +173,7 @@ void startup() {
 	// Calculate proj_matrix for the first time.
 	aspect = (float) windowWidth / (float) windowHeight;
 	proj_matrix = glm::perspective(glm::radians(fovy), aspect, 0.1f, 1000.0f);
+
 }
 
 void update(GLfloat currentTime) {
@@ -210,26 +217,42 @@ void render(GLfloat currentTime) {
 	// Use our shader programs
 	glUseProgram(program);
 
-	// Do some translations, rotations and scaling
-	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), modelPosition);
-	//modelMatrix = glm::rotate(modelMatrix, modelRotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-	//modelMatrix = glm::rotate(modelMatrix, modelRotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-	//modelMatrix = glm::rotate(modelMatrix, modelRotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-	//modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f, 0.2f, 0.2f));
 
-	// glm::mat4 mv_matrix = viewMatrix * modelMatrix;
 
-	camera->update();
-	
 
-	// TODO: each one of these is a separate thing in the scene, change to a loop for everything
-	// TODO: Add lighting here ***
-	// glUniform4f(glGetUniformLocation(objectModel.program, "lightPosition"),lightDisp.x, lightDisp.y, lightDisp.z, 1.0);
-	glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_FALSE, &modelMatrix[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(program, "view_matrix"), 1, GL_FALSE, &camera->getView()[0][0]);
+	// ----
+	GLfloat ka = 1.0;
+	glm::vec3 ia = glm::vec3(0.5f, 0.5f, 0.5f);
+
+	glUniform1f(glGetUniformLocation(program, "ka"),ka);
+	glUniform3f(glGetUniformLocation(program, "ia"), ia.r, ia.g, ia.b);
+
+	glUniform4f(glGetUniformLocation(program,"lightPosition"), sin(lastFrame), cos(lastFrame), 1, 1.0);
+	// glm::mat4 mv_matrix = camera->getMatrix() * chair->getPosition();
+	//glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_FALSE, &modelMatrix[0][0]);
+	//glUniformMatrix4fv(glGetUniformLocation(program, "view_matrix"), 1, GL_FALSE, &viewMatrix[0][0]);
+	// -----
+
+
+
+
+
+
 	glUniformMatrix4fv(glGetUniformLocation(program, "proj_matrix"), 1, GL_FALSE, &proj_matrix[0][0]);
 
-	 cube->Draw();
+	camera->update();
+	glUniformMatrix4fv(glGetUniformLocation(program, "view_matrix"), 1, GL_FALSE, &camera->getMatrix()[0][0]);
+
+	cube->update();
+	//cube->rotation(lastFrame* 20, vec3(0, 1, 1));
+	glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_FALSE, &cube->getMatrix()[0][0]);
+	cube->draw();
+
+	chair->update();
+	//chair->rotation(-lastFrame * 100, vec3(10, 10, 0));
+	glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_FALSE, &chair->getMatrix()[0][0]);
+	chair->draw();
+
 }
 
 void onResizeCallback(GLFWwindow* window, int w, int h) {
@@ -377,5 +400,59 @@ Lights behind grids for shadowed areas
 - translating
 
 Train track with train going by
+
+
+
+
+*** DEFORMATION ***
+7 days to die
+- move vectex z axis
+- adjacent vertices out of bounds then create additional.
+
+*/
+
+
+/* FRAGMENT
+#version 430 core
+
+out vec4 color;
+
+in VS_OUT
+{
+	vec2 tc;
+	vec3 normals;
+} fs_in;
+
+uniform mat4 model_matrix;
+
+void main(void){
+  color = vec4(1.0,1.0,1.0,1.0);
+  //color = vec4(fs_in.normals, 1.0);
+}
+*/
+
+/* VERTEX 
+#version 430 core
+
+layout (location = 0) in vec3 position;
+layout (location = 1) in vec2 tc;
+layout (location = 2) in vec3 normals;
+
+out VS_OUT {
+	vec2 tc;
+	vec3 normals;
+} vs_out;
+
+uniform mat4 model_matrix;
+uniform mat4 view_matrix;
+uniform mat4 proj_matrix;
+
+void main(void){
+	gl_Position = proj_matrix * view_matrix * model_matrix * vec4(position, 1.0);
+
+	vs_out.tc = tc;
+	vs_out.normals = normals;
+}
+
 
 */

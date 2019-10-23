@@ -1,34 +1,27 @@
 #pragma once
+#include "Mesh.h"
 #include "Entity.h"
 using namespace _Entity;
 
-namespace _Camera {
-	class Camera : public Entity {
+namespace _Object {
+	class Object : public Entity {
 	private:
 		/* Members */
-		bool magnify = false;
-
+		std::string file;
+		Mesh* mesh;
 		/* Methods */
 	protected:
 		/* Members */
-		float cameraSpeed = 2.5f;
-		float speedModifier = 1.0f;
-
-		vec3 cameraUp;
-		vec3 front;
-
-		float yaw = -90.0f;
-		float pitch = 0.0f;
-
 		/* Methods */
-
 	public:
 		/* Members */
 		/* Methods */
-		Camera();
-		Camera(vec3 position, vec3 target);
+		Object();
+		Object(std::string file);
 
-		void update();
+		void loadMesh(std::string file);
+		void draw();
+
 		virtual void processInput(std::string key);
 		virtual void processMouse(float x, float y);
 	};

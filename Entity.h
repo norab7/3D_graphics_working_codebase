@@ -38,12 +38,10 @@ namespace _Entity {
 		bool canRotate = true;
 
 		/* Methods */
-		void translate(vec3 translation);
-		void rotate();
 
 	public:
 		/* Members */
-		mat4 view;
+		mat4 matrix;
 
 		/* Methods */
 		Entity(vec3 position = vec3(0.0f, 0.0f, 0.0f));
@@ -52,11 +50,14 @@ namespace _Entity {
 
 		void setPosition(vec3 position);
 		void setTarget(vec3 target);
-		// void setDirection();
 		void setDeltaTime(float deltaTime);
 
 		vec3 getPosition();
-		mat4 getView();
+		mat4 getMatrix();
+
+		void translation(vec3 translation);
+		void translation(float x, float y, float z);
+		void rotation(float degrees, vec3 axis);
 
 		virtual void update();
 		virtual void processInput(std::string key);

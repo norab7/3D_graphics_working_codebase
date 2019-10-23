@@ -17,24 +17,25 @@
 
 #include <stb_image.h>			// Add library to load images for textures
 
-// #include "Window.h"
 #include "Camera.h"
-#include "Mesh.h"				// Simplest mesh holder and OBJ loader - can update more - from https://github.com/BennyQBD/ModernOpenGLTutorial
+#include "Object.h"
+// #include "Mesh.h"				// Simplest mesh holder and OBJ loader - can update more - from https://github.com/BennyQBD/ModernOpenGLTutorial
 
 using namespace std;
 using namespace glm;
 
 /* Members */
 GLFWwindow * window;
-int windowWidth = 1280;
-int windowHeight = 720;
+int windowWidth = 1920;
+int windowHeight = 1080;
 
 GLuint program;
 
 _Camera::Camera * camera;
 
-Mesh * cube;
-mat4 proj_matrix;// Projection Matrix
+//Mesh* cube;
+//Mesh* chair;
+mat4 proj_matrix;	// Projection Matrix
 vec3 modelPosition;
 
 GLfloat	deltaTime =	0.0f;

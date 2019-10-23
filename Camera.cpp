@@ -13,7 +13,7 @@ Camera::Camera(vec3 position, vec3 target) :Entity(position, target) {
 }
 
 void Camera::update() {
-	view = lookAt(position, position + front, cameraUp);
+	matrix = lookAt(position, position + front, cameraUp);
 }
 
 void Camera::processInput(std::string key) {
@@ -41,8 +41,6 @@ void Camera::processInput(std::string key) {
 
 void Camera::processMouse(float x, float y){
 	Entity::processMouse(x, y);
-
-	
 
 	// Default yaw value as -90.0f
 	yaw += offsetX;

@@ -1,7 +1,3 @@
-
-
-
-
 #include "OBJLoader.h"
 #include <fstream>
 #include <iostream>

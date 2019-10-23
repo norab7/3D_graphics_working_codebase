@@ -25,8 +25,16 @@ Entity::Entity(vec3 position, vec3 target, bool isStatic) {
 	update();
 }
 
-void Entity::translate(vec3 translation) {
+void Entity::translation(vec3 translation) {
 	position = position + translation;
+}
+
+void Entity::translation(float x, float y, float z) {
+
+}
+
+void Entity::rotation(float degrees, vec3 axis) {
+	matrix = rotate(matrix, radians(degrees), axis);
 }
 
 void Entity::setPosition(vec3 position) {
@@ -46,14 +54,12 @@ vec3 Entity::getPosition() {
 	return position;
 }
 
-mat4 Entity::getView() {
-	return view;
+mat4 Entity::getMatrix() {
+	return matrix;
 }
 
 void Entity::update() {
-	if (!isStatic) {
-		view = lookAt(position, position - direction, worldUp); 
-	}
+	matrix = lookAt(position, position - direction, worldUp); 
 }
 
 void Entity::processInput(std::string key) {
