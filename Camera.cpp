@@ -8,6 +8,8 @@ Camera::Camera(vec3 position, vec3 target) :Entity(position, target) {
 	front = direction;
 	cameraUp = normalize(cross(right, front));
 	update();
+
+	std::cout << "Camera Setup Complete" << std::endl;
 }
 
 void Camera::update() {
@@ -26,16 +28,21 @@ void Camera::processInput(std::string key) {
 	if (key == "a") { position -= movementSpeed * normalize(cross(front, cameraUp)); }
 	if (key == "d") { position += movementSpeed * normalize(cross(front, cameraUp)); }
 
-	if (key == "shift") { speedModifier = 2.0f; } else { speedModifier = 1.0f; }
+	if (key == "shift") {
+		speedModifier = 2.0f; 
+	} else { 
+		speedModifier = 1.0f;
 
-	printMsg("position and front");
-	printVector(position);
-	printVector(front);
-
+		printMsg("position and front");
+		printVector(position);
+		printVector(front);
+	}
 }
 
 void Camera::processMouse(float x, float y){
 	Entity::processMouse(x, y);
+
+	
 
 	// Default yaw value as -90.0f
 	yaw += offsetX;
@@ -52,3 +59,10 @@ void Camera::processMouse(float x, float y){
 	right = normalize(cross(front, worldUp));
 	cameraUp = normalize(cross(right, front));
 }
+
+/*
+Cube:
+	Top = Green
+	Right = Red
+	Face = Blue
+*/

@@ -10,15 +10,23 @@ Entity::Entity(vec3 position, vec3 target):Entity(position, target, false) {
 Entity::Entity(vec3 position, vec3 target, bool isStatic) {
 	if (position == target) {
 		// TODO: Check this works for central objects
+		printMsg("Position and Target are the same; Adjusting vectors...");
 		target = vec3(position.x, position.y, position.z + 1);
 	}
 
 	this->position = position;
-	setTarget(target);
 	this->isStatic = isStatic;
-	right = normalize(cross(worldUp, direction));
+
+	setTarget(target);
+
+	// Order of glm::cross parameters matters!
+	right = normalize(cross(direction, worldUp));
 
 	update();
+}
+
+void Entity::translate(vec3 translation) {
+	position = position + translation;
 }
 
 void Entity::setPosition(vec3 position) {
@@ -43,7 +51,7 @@ mat4 Entity::getView() {
 }
 
 void Entity::update() {
-	if (isStatic) {
+	if (!isStatic) {
 		view = lookAt(position, position - direction, worldUp); 
 	}
 }

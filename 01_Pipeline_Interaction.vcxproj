@@ -22,7 +22,7 @@
     <ProjectGuid>{C84F818A-8623-40DC-A2A9-B2EB3BAAFA9A}</ProjectGuid>
     <RootNamespace>My01_Pipeline_Interaction</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Main_Template</ProjectName>
+    <ProjectName>3D_Graphics_Coursework</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -148,6 +148,7 @@
     <ClCompile Include="OBJLoader.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="UsefulCode.cpp" />
+    <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -155,6 +156,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="OBJLoader.h" />
     <ClInclude Include="Source.h" />
+    <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

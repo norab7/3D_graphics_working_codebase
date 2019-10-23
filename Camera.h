@@ -21,6 +21,7 @@ namespace _Camera {
 		float pitch = 0.0f;
 
 		/* Methods */
+
 	public:
 		/* Members */
 		/* Methods */

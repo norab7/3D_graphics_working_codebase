@@ -38,7 +38,8 @@ namespace _Entity {
 		bool canRotate = true;
 
 		/* Methods */
-
+		void translate(vec3 translation);
+		void rotate();
 
 	public:
 		/* Members */
