@@ -9,6 +9,8 @@ namespace _Object {
 		/* Members */
 		std::string file;
 		Mesh* mesh;
+		
+		bool meshLoaded = false;
 		/* Methods */
 	protected:
 		/* Members */
@@ -18,11 +20,13 @@ namespace _Object {
 		/* Methods */
 		Object();
 		Object(std::string file);
+		Object(std::string file, vec3 position);
 
 		void loadMesh(std::string file);
-		void draw();
 
+		virtual void draw();
 		virtual void processInput(std::string key);
+		virtual void processMouseInput(int button);
 		virtual void processMouse(float x, float y);
 	};
 }

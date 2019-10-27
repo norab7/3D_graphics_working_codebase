@@ -21,8 +21,6 @@ Entity::Entity(vec3 position, vec3 target, bool isStatic) {
 
 	// Order of glm::cross parameters matters!
 	right = normalize(cross(direction, worldUp));
-
-	update();
 }
 
 void Entity::translation(vec3 translation) {
@@ -35,6 +33,14 @@ void Entity::translation(float x, float y, float z) {
 
 void Entity::rotation(float degrees, vec3 axis) {
 	matrix = rotate(matrix, radians(degrees), axis);
+}
+
+void Entity::doRotation(float degrees, vec3 axis, int duration) {
+
+}
+
+void Entity::animate(vec3* animations, float* durations) {
+
 }
 
 void Entity::setPosition(vec3 position) {
@@ -59,10 +65,23 @@ mat4 Entity::getMatrix() {
 }
 
 void Entity::update() {
-	matrix = lookAt(position, position - direction, worldUp); 
+	matrix = lookAt(position, position - direction, worldUp);
+}
+
+void Entity::update(GLfloat interval) {
+	this->interval = interval;
+	update();
+}
+
+void Entity::draw() {
+	// Intentionally Blank
 }
 
 void Entity::processInput(std::string key) {
+	// Intentionally Blank
+}
+
+void Entity::processMouseInput(int button) {
 	// Intentionally Blank
 }
 

@@ -19,6 +19,7 @@
 
 #include "Camera.h"
 #include "Object.h"
+// #include "Cube.h"
 // #include "Mesh.h"				// Simplest mesh holder and OBJ loader - can update more - from https://github.com/BennyQBD/ModernOpenGLTutorial
 
 using namespace std;
@@ -31,7 +32,7 @@ int windowHeight = 1080;
 
 GLuint program;
 
-_Camera::Camera * camera;
+// _Camera::Camera * camera;
 
 //Mesh* cube;
 //Mesh* chair;

@@ -24,8 +24,16 @@ static void APIENTRY openGLDebugCallback(GLenum source,
 	const GLchar* message,
 	const GLvoid* userParam);
 
-_Object::Object * cube;
-_Object::Object * chair;
+// Objects
+_Camera::Camera * camera = new _Camera::Camera();
+
+// Individual Object Classes allows for individual object processInput methods
+_Object::Object* cube = new _Object::Object("cube_uv.obj", vec3(3, 3, 0));
+_Object::Object* chair = new _Object::Object("cube_uv.obj", vec3(-3, -3, 0));
+_Object::Object* lightsource = new _Object::Object("cube_uv.obj", vec3(0, 0, 0));
+_Object::Object* road = new _Object::Object("Road.obj", vec3(0, 0, 0));
+
+std::vector<Entity*> entities;
 
 int main() {
 	std::cout << "Starting Up!" << std::endl << std::endl;
@@ -34,16 +42,20 @@ int main() {
 	init();
 	callbackSetup(); 
 	debugGL();
-	setupRender();								
+	setupRender();	
 
-	camera = new _Camera::Camera();
-	cube = new _Object::Object("cube_uv.obj");
-	chair = new _Object::Object("chair.obj");
+	std::cout << "Entities.size()" << entities.size() << std::endl;
+	int numEntities = 10;
+	int multiplier = 4;
 
-	cube->setPosition(vec3(2.0f, 0.0f, 0.0f));
-	chair->setPosition(vec3(-2.0f, 0.0f, 0.0f));
-
-
+	for (int i = 0; i < numEntities; i++) {
+		for (int j = 0; j < numEntities; j++) {
+			for (int k = 0; k < numEntities; k++){
+				entities.push_back(new _Object::Object("cube_uv.obj", vec3(i*multiplier, j*multiplier, k*multiplier)));
+			}
+		}
+	}
+	std::cout << "Entities.size()" << entities.size() << std::endl;
 
 	// Setup all necessary information for startup (aka. load texture, shaders, models, etc).
 	startup();		
@@ -176,6 +188,69 @@ void startup() {
 
 }
 
+
+void render(GLfloat currentTime) {
+
+	glViewport(0, 0, windowWidth, windowHeight);
+
+	// Clear colour buffer
+	vec4 backgroundColor = vec4(0.2f, 0.2f, 0.2f, 1.0f); 
+	glClearBufferfv(GL_COLOR, 0, &backgroundColor[0]);
+
+	// Clear deep buffer
+	static const GLfloat one = 1.0f; 
+	glClearBufferfv(GL_DEPTH, 0, &one);
+
+	// Enable blend
+	glEnable(GL_BLEND); 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// Use our shader programs
+	glUseProgram(program);
+
+	// ----
+	GLfloat ka = 1.0;
+	glm::vec3 ia = glm::vec3(0.5f, 0.5f, 0.5f);
+
+	glUniform1f(glGetUniformLocation(program, "ka"),ka);
+	glUniform3f(glGetUniformLocation(program, "ia"), ia.r, ia.g, ia.b);
+
+	glUniform4f(glGetUniformLocation(program,"lightPosition"), sin(lastFrame)*100, 1, cos(lastFrame)*100, 1.0);
+
+	glUniformMatrix4fv(glGetUniformLocation(program, "proj_matrix"), 1, GL_FALSE, &proj_matrix[0][0]);
+
+	camera->update();
+	glUniformMatrix4fv(glGetUniformLocation(program, "view_matrix"), 1, GL_FALSE, &camera->getMatrix()[0][0]);
+
+	//road->update();
+	//glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_FALSE, &road->getMatrix()[0][0]);
+	//road->draw();
+
+	for (int i = 0; i < entities.size(); i++) {
+		entities.at(i)->update(lastFrame);
+		// entities.at(i)->rotation(rand() % 5, vec3(sin(i), 0, cos(i))); // shakey shakey
+		glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_FALSE, &entities.at(i)->getMatrix()[0][0]);
+		entities.at(i)->draw();
+	}
+
+}
+
+void onResizeCallback(GLFWwindow* window, int w, int h) {
+	windowWidth = w;
+	windowHeight = h;
+
+	aspect = (float)w / (float)h;
+	proj_matrix = glm::perspective(glm::radians(fovy), aspect, 0.1f, 1000.0f);
+}
+
+void onKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	//if (action == GLFW_PRESS) keyStatus[key] = true;
+	//else if (action == GLFW_RELEASE) keyStatus[key] = false;
+
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
 void update(GLfloat currentTime) {
 	
 	// TODO: Change processInput to accept the key, not a string
@@ -198,80 +273,12 @@ void update(GLfloat currentTime) {
 
 }
 
-void render(GLfloat currentTime) {
-
-	glViewport(0, 0, windowWidth, windowHeight);
-
-	// Clear colour buffer
-	vec4 backgroundColor = vec4(0.2f, 0.2f, 0.2f, 1.0f); 
-	glClearBufferfv(GL_COLOR, 0, &backgroundColor[0]);
-
-	// Clear deep buffer
-	static const GLfloat one = 1.0f; 
-	glClearBufferfv(GL_DEPTH, 0, &one);
-
-	// Enable blend
-	glEnable(GL_BLEND); 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	// Use our shader programs
-	glUseProgram(program);
-
-
-
-
-	// ----
-	GLfloat ka = 1.0;
-	glm::vec3 ia = glm::vec3(0.5f, 0.5f, 0.5f);
-
-	glUniform1f(glGetUniformLocation(program, "ka"),ka);
-	glUniform3f(glGetUniformLocation(program, "ia"), ia.r, ia.g, ia.b);
-
-	glUniform4f(glGetUniformLocation(program,"lightPosition"), sin(lastFrame), cos(lastFrame), 1, 1.0);
-	// glm::mat4 mv_matrix = camera->getMatrix() * chair->getPosition();
-	//glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_FALSE, &modelMatrix[0][0]);
-	//glUniformMatrix4fv(glGetUniformLocation(program, "view_matrix"), 1, GL_FALSE, &viewMatrix[0][0]);
-	// -----
-
-
-
-
-
-
-	glUniformMatrix4fv(glGetUniformLocation(program, "proj_matrix"), 1, GL_FALSE, &proj_matrix[0][0]);
-
-	camera->update();
-	glUniformMatrix4fv(glGetUniformLocation(program, "view_matrix"), 1, GL_FALSE, &camera->getMatrix()[0][0]);
-
-	cube->update();
-	//cube->rotation(lastFrame* 20, vec3(0, 1, 1));
-	glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_FALSE, &cube->getMatrix()[0][0]);
-	cube->draw();
-
-	chair->update();
-	//chair->rotation(-lastFrame * 100, vec3(10, 10, 0));
-	glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_FALSE, &chair->getMatrix()[0][0]);
-	chair->draw();
-
-}
-
-void onResizeCallback(GLFWwindow* window, int w, int h) {
-	windowWidth = w;
-	windowHeight = h;
-
-	aspect = (float)w / (float)h;
-	proj_matrix = glm::perspective(glm::radians(fovy), aspect, 0.1f, 1000.0f);
-}
-
-void onKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	//if (action == GLFW_PRESS) keyStatus[key] = true;
-	//else if (action == GLFW_RELEASE) keyStatus[key] = false;
-
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
-}
-
 void onMouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
+		
+	}
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {}
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_3) == GLFW_PRESS) {}
 
 }
 

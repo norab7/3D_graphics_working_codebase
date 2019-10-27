@@ -32,6 +32,7 @@ namespace _Entity {
 		float offsetY;
 
 		// Time
+		GLfloat interval = 0;
 		float deltaTime = 1.0f;
 
 		bool isStatic = true;
@@ -58,9 +59,15 @@ namespace _Entity {
 		void translation(vec3 translation);
 		void translation(float x, float y, float z);
 		void rotation(float degrees, vec3 axis);
+		void doRotation(float degrees, vec3 axis, int duration);
+
+		void animate(vec3* animations, float* durations);
 
 		virtual void update();
+		virtual void update(GLfloat interval);
+		virtual void draw();
 		virtual void processInput(std::string key);
+		virtual void processMouseInput(int button);
 		virtual void processMouse(float x, float y);
 
 		void printVector(vec3 vector);
