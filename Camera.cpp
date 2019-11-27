@@ -12,6 +12,10 @@ Camera::Camera(vec3 position, vec3 target) :Entity(position, target) {
 	std::cout << "Camera Setup Complete" << std::endl;
 }
 
+vec3 Camera::getFront() {
+	return this->front;
+}
+
 void Camera::update() {
 	matrix = lookAt(position, position + front, cameraUp);
 }
@@ -33,9 +37,9 @@ void Camera::processInput(std::string key) {
 	} else { 
 		speedModifier = 1.0f;
 
-		printMsg("position and front");
+	/*	printMsg("position and front");
 		printVector(position);
-		printVector(front);
+		printVector(front);*/
 	}
 }
 

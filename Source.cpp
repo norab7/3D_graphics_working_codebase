@@ -34,6 +34,10 @@ _Object::Object* lightsource = new _Object::Object("cube_uv.obj", vec3(0, 0, 0))
 _Object::Object* road = new _Object::Object("Road.obj", vec3(0, 0, 0));
 
 std::vector<Entity*> entities;
+std::vector<_Projectile::Projectile*> projectiles;
+
+GLuint texture, texture2;
+string texname = "cork.png", texname2 = "cubeTexture.jpg"; // cubeTexture.jpg, cork.png, awesomeface.png
 
 int main() {
 	std::cout << "Starting Up!" << std::endl << std::endl;
@@ -44,18 +48,23 @@ int main() {
 	debugGL();
 	setupRender();	
 
-	std::cout << "Entities.size()" << entities.size() << std::endl;
 	int numEntities = 10;
 	int multiplier = 4;
+	int actual = numEntities - 1;
+
+	int i = 0, j = 0, k = 0;
+	entities.push_back(new _Object::Object("cube_uv.obj", vec3(i * multiplier, j * multiplier, k * multiplier)));
 
 	for (int i = 0; i < numEntities; i++) {
 		for (int j = 0; j < numEntities; j++) {
 			for (int k = 0; k < numEntities; k++){
-				entities.push_back(new _Object::Object("cube_uv.obj", vec3(i*multiplier, j*multiplier, k*multiplier)));
+
+				//if (!(i == 0 || j == 0 || k == 0 || i == actual || j == actual || k == actual)) { continue; }
+				if (i == 0 && j == 0 && k == 0) { continue; }
+				entities.push_back(new _Object::Object("cube_uv.obj", vec3(i * multiplier, j * multiplier, k * multiplier)));
 			}
 		}
 	}
-	std::cout << "Entities.size()" << entities.size() << std::endl;
 
 	// Setup all necessary information for startup (aka. load texture, shaders, models, etc).
 	startup();		
@@ -168,11 +177,29 @@ void startup() {
 	checkErrorShader(fs);
 	glAttachShader(program, fs);
 
+	// Linking
 	glLinkProgram(program);
 	glUseProgram(program);
 
-	// Start from the centre  
-	modelPosition = glm::vec3(0.0f, 0.0f, 0.0f); // ( R, U, D 
+
+	// TODO: Textures can go internal to the Objects
+	// texture 1
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load(texname.c_str(), &width, &height, &nrChannels, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(data);
+
+	// texture 2
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	data = stbi_load(texname2.c_str(), &width, &height, &nrChannels, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(data);
+
 
 	// A few optimizations.
 	glFrontFace(GL_CCW);
@@ -186,6 +213,14 @@ void startup() {
 	aspect = (float) windowWidth / (float) windowHeight;
 	proj_matrix = glm::perspective(glm::radians(fovy), aspect, 0.1f, 1000.0f);
 
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glUniform1i(glGetUniformLocation(program, "tex"), 0);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	glUniform1i(glGetUniformLocation(program, "tex2"), 1);
+
 }
 
 
@@ -194,12 +229,13 @@ void render(GLfloat currentTime) {
 	glViewport(0, 0, windowWidth, windowHeight);
 
 	// Clear colour buffer
-	vec4 backgroundColor = vec4(0.2f, 0.2f, 0.2f, 1.0f); 
+	vec4 backgroundColor = vec4(0.2f, 0.2f, 0.6f, 1.0f); 
 	glClearBufferfv(GL_COLOR, 0, &backgroundColor[0]);
 
 	// Clear deep buffer
 	static const GLfloat one = 1.0f; 
 	glClearBufferfv(GL_DEPTH, 0, &one);
+
 
 	// Enable blend
 	glEnable(GL_BLEND); 
@@ -208,15 +244,7 @@ void render(GLfloat currentTime) {
 	// Use our shader programs
 	glUseProgram(program);
 
-	// ----
-	GLfloat ka = 1.0;
-	glm::vec3 ia = glm::vec3(0.5f, 0.5f, 0.5f);
-
-	glUniform1f(glGetUniformLocation(program, "ka"),ka);
-	glUniform3f(glGetUniformLocation(program, "ia"), ia.r, ia.g, ia.b);
-
 	glUniform4f(glGetUniformLocation(program,"lightPosition"), sin(lastFrame)*100, 1, cos(lastFrame)*100, 1.0);
-
 	glUniformMatrix4fv(glGetUniformLocation(program, "proj_matrix"), 1, GL_FALSE, &proj_matrix[0][0]);
 
 	camera->update();
@@ -226,13 +254,36 @@ void render(GLfloat currentTime) {
 	//glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_FALSE, &road->getMatrix()[0][0]);
 	//road->draw();
 
+	GLfloat ka = 0.25f;//((float) (rand() % 100) / 100);
+	glm::vec3 ia = vec3(0.5, 0.5, 0.5);//glm::vec3(((float)(rand() % 100) / 100), ((float)(rand() % 100) / 100), ((float)(rand() % 100) / 100));
+	glUniform1f(glGetUniformLocation(program, "ka"), ka);
+	glUniform3f(glGetUniformLocation(program, "ia"), ia.r, ia.g, ia.b);
+
+
+
 	for (int i = 0; i < entities.size(); i++) {
 		entities.at(i)->update(lastFrame);
+
+		// textures
+		float trans = ((float)(i % 10)) / 10 ;
+		glUniform1f(glGetUniformLocation(program, "count"), i);
+		glUniform1f(glGetUniformLocation(program, "trans"), trans);
+		// ----
+
 		// entities.at(i)->rotation(rand() % 5, vec3(sin(i), 0, cos(i))); // shakey shakey
 		glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_FALSE, &entities.at(i)->getMatrix()[0][0]);
 		entities.at(i)->draw();
 	}
-
+	for (int i = 0; i < projectiles.size(); i++) {
+		if (!projectiles.at(i)->active) {
+			projectiles.at(i)->kill(projectiles.at(i));
+			projectiles.erase(projectiles.begin() + i);
+			continue;
+		} 
+		projectiles.at(i)->update(lastFrame);
+		glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_FALSE, &projectiles.at(i)->getMatrix()[0][0]);
+		projectiles.at(i)->draw();
+	}
 }
 
 void onResizeCallback(GLFWwindow* window, int w, int h) {
@@ -275,11 +326,11 @@ void update(GLfloat currentTime) {
 
 void onMouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
-		
+		std::cout << "mouseButton1" << std::endl;
+		projectiles.push_back(new _Projectile::Projectile("p.obj",(-camera->getPosition()) - (camera->getFront() * 2.0f), camera->getFront(), lastFrame, 1000));
 	}
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {}
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_3) == GLFW_PRESS) {}
-
 }
 
 void onMouseMoveCallback(GLFWwindow* window, double x, double y) {

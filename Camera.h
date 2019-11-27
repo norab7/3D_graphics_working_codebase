@@ -12,7 +12,7 @@ namespace _Camera {
 	protected:
 		/* Members */
 		float cameraSpeed = 2.5f;
-		float speedModifier = 1.0f;
+		float speedModifier = 3.0f;
 
 		vec3 cameraUp;
 		vec3 front;
@@ -27,6 +27,8 @@ namespace _Camera {
 		/* Methods */
 		Camera();
 		Camera(vec3 position, vec3 target);
+
+		vec3 getFront();
 
 		void update();
 		virtual void processInput(std::string key);

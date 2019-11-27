@@ -7,7 +7,6 @@ namespace _Object {
 	class Object : public Entity {
 	private:
 		/* Members */
-		std::string file;
 		Mesh* mesh;
 		
 		bool meshLoaded = false;
@@ -17,6 +16,7 @@ namespace _Object {
 		/* Methods */
 	public:
 		/* Members */
+		std::string file;
 		/* Methods */
 		Object();
 		Object(std::string file);
