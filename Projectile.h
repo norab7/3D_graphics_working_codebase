@@ -21,7 +21,7 @@ namespace _Projectile {
 		bool active = true;
 		bool isChild = false;
 		/* Methods */
-		Projectile(std::string file, vec3 start, vec3 direction, float initialFrame, float duration, bool child = false);
+		Projectile(std::string file, std::string texture, vec3 start, vec3 direction, float initialFrame, float duration, bool child = false);
 		
 		void kill(Projectile * explode);
 

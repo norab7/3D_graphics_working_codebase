@@ -16,11 +16,10 @@ namespace _Object {
 		/* Methods */
 	public:
 		/* Members */
-		std::string file;
+		std::string obj;
+		std::string texture;
 		/* Methods */
-		Object();
-		Object(std::string file);
-		Object(std::string file, vec3 position);
+		Object(std::string file, std::string texture, vec3 position);
 
 		void loadMesh(std::string file);
 

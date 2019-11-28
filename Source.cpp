@@ -25,19 +25,19 @@ static void APIENTRY openGLDebugCallback(GLenum source,
 	const GLvoid* userParam);
 
 // Objects
-_Camera::Camera * camera = new _Camera::Camera();
+_Camera::Camera * camera = new _Camera::Camera(vec3(0,5,0),vec3(0,5,-1));
 
 // Individual Object Classes allows for individual object processInput methods
-_Object::Object* cube = new _Object::Object("cube_uv.obj", vec3(3, 3, 0));
-_Object::Object* chair = new _Object::Object("cube_uv.obj", vec3(-3, -3, 0));
-_Object::Object* lightsource = new _Object::Object("cube_uv.obj", vec3(0, 0, 0));
-_Object::Object* road = new _Object::Object("Road.obj", vec3(0, 0, 0));
+//_Object::Object* cube = new _Object::Object("rock_large.obj", vec3(3, 3, 0));
+//_Object::Object* chair = new _Object::Object("rock_large.obj", vec3(-3, -3, 0));
+//_Object::Object* lightsource = new _Object::Object("rock_large.obj", vec3(0, 0, 0));
+// _Object::Object* road = new _Object::Object("Road.obj", vec3(0, 0, 0));
 
 std::vector<Entity*> entities;
 std::vector<_Projectile::Projectile*> projectiles;
 
 GLuint texture, texture2;
-string texname = "cork.png", texname2 = "cubeTexture.jpg"; // cubeTexture.jpg, cork.png, awesomeface.png
+string texname = "textures/cork.jpg", texname2 = "textures/cork.png"; // cubeTexture.jpg, cork.png, awesomeface.png
 
 int main() {
 	std::cout << "Starting Up!" << std::endl << std::endl;
@@ -53,18 +53,18 @@ int main() {
 	int actual = numEntities - 1;
 
 	int i = 0, j = 0, k = 0;
-	entities.push_back(new _Object::Object("cube_uv.obj", vec3(i * multiplier, j * multiplier, k * multiplier)));
+	entities.push_back(new _Object::Object("objects/theroom.obj", "textures/cork.jpg", vec3(0,0,0)));
 
-	for (int i = 0; i < numEntities; i++) {
-		for (int j = 0; j < numEntities; j++) {
-			for (int k = 0; k < numEntities; k++){
+	//for (int i = 0; i < numEntities; i++) {
+	//	for (int j = 0; j < numEntities; j++) {
+	//		for (int k = 0; k < numEntities; k++){
 
-				//if (!(i == 0 || j == 0 || k == 0 || i == actual || j == actual || k == actual)) { continue; }
-				if (i == 0 && j == 0 && k == 0) { continue; }
-				entities.push_back(new _Object::Object("cube_uv.obj", vec3(i * multiplier, j * multiplier, k * multiplier)));
-			}
-		}
-	}
+	//			//if (!(i == 0 || j == 0 || k == 0 || i == actual || j == actual || k == actual)) { continue; }
+	//			if (i == 0 && j == 0 && k == 0) { continue; }
+	//			entities.push_back(new _Object::Object("cube_uv.obj", vec3(i * multiplier, j * multiplier, k * multiplier)));
+	//		}
+	//	}
+	//}
 
 	// Setup all necessary information for startup (aka. load texture, shaders, models, etc).
 	startup();		
@@ -184,21 +184,23 @@ void startup() {
 
 	// TODO: Textures can go internal to the Objects
 	// texture 1
+
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
 	unsigned char* data = stbi_load(texname.c_str(), &width, &height, &nrChannels, 0);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(data);
 
-	// texture 2
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-	data = stbi_load(texname2.c_str(), &width, &height, &nrChannels, 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(data);
+	//// texture 2
+	//glGenTextures(1, &texture2);
+	//glBindTexture(GL_TEXTURE_2D, texture2);
+	//data = stbi_load(texname2.c_str(), &width, &height, &nrChannels, 0);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	//glGenerateMipmap(GL_TEXTURE_2D);
+	//stbi_image_free(data);
 
 
 	// A few optimizations.
@@ -217,9 +219,9 @@ void startup() {
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glUniform1i(glGetUniformLocation(program, "tex"), 0);
 
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-	glUniform1i(glGetUniformLocation(program, "tex2"), 1);
+	//glActiveTexture(GL_TEXTURE0 + 1);
+	//glBindTexture(GL_TEXTURE_2D, texture2);
+	//glUniform1i(glGetUniformLocation(program, "tex2"), 1);
 
 }
 
@@ -229,7 +231,7 @@ void render(GLfloat currentTime) {
 	glViewport(0, 0, windowWidth, windowHeight);
 
 	// Clear colour buffer
-	vec4 backgroundColor = vec4(0.2f, 0.2f, 0.6f, 1.0f); 
+	vec4 backgroundColor = vec4(0, 0, 0, 1);//vec4(0.2f, 0.2f, 0.6f, 1.0f); 
 	glClearBufferfv(GL_COLOR, 0, &backgroundColor[0]);
 
 	// Clear deep buffer
@@ -327,7 +329,7 @@ void update(GLfloat currentTime) {
 void onMouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
 		std::cout << "mouseButton1" << std::endl;
-		projectiles.push_back(new _Projectile::Projectile("p.obj",(-camera->getPosition()) - (camera->getFront() * 2.0f), camera->getFront(), lastFrame, 1000));
+		projectiles.push_back(new _Projectile::Projectile("p.obj", "cork.png",(-camera->getPosition()) - (camera->getFront() * 2.0f), camera->getFront(), lastFrame, 1000));
 	}
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {}
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_3) == GLFW_PRESS) {}

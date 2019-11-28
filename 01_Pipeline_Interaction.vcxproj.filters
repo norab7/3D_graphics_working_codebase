@@ -16,9 +16,6 @@
     <Filter Include="Mesh Loader">
       <UniqueIdentifier>{ade7b222-734d-4870-bd8c-63c7c42f35ff}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Objects">
-      <UniqueIdentifier>{77f275a7-d136-4163-9bc2-b7a718eedb91}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Entities Classes">
       <UniqueIdentifier>{69a77cc5-2d68-4294-b262-a416f2fb3633}</UniqueIdentifier>
     </Filter>
@@ -48,9 +45,6 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Entities Classes</Filter>
     </ClCompile>
-    <ClCompile Include="Cube.cpp">
-      <Filter>Objects</Filter>
-    </ClCompile>
     <ClCompile Include="Projectile.cpp">
       <Filter>Entities Classes</Filter>
     </ClCompile>
@@ -76,9 +70,6 @@
     </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Entities Classes</Filter>
-    </ClInclude>
-    <ClInclude Include="Cube.h">
-      <Filter>Objects</Filter>
     </ClInclude>
     <ClInclude Include="Projectile.h">
       <Filter>Entities Classes</Filter>

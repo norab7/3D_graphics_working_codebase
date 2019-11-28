@@ -1,26 +1,21 @@
 #include "Object.h"
 using namespace _Object;
 
-Object::Object() {
-	mesh = new Mesh();
-}
-
-Object::Object(std::string file):Object(file, vec3(0,0,0)) {
-}
-
-Object::Object(std::string file, vec3 position):Object() {
-	this->file = file;
+Object::Object(std::string obj, std::string texture, vec3 position) {
+	this->obj = obj;
+	this->texture = texture;
 	this->position = position;
+
 }
 
 void Object::loadMesh(std::string file) {
-	this->file = file;
+	this->obj = file;
 	mesh->LoadModel(file);
 }
 
 void Object::draw() {
 	if (!meshLoaded) {
-		mesh->LoadModel(file);
+		mesh->LoadModel(obj);
 		meshLoaded = true;
 	}
 	mesh->Draw();

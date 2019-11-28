@@ -1,7 +1,8 @@
 #include "Projectile.h"
 using namespace _Projectile;
 
-Projectile::Projectile(std::string file, vec3 position, vec3 direction, float initialFrame, float duration, bool child):Object(file, position) {
+Projectile::Projectile(std::string file,std::string texture, vec3 position, vec3 direction, float initialFrame, float duration, bool child)
+	:Object(file, texture, position) {
 	this->isChild = child;
 	this->direction = direction;
 	this->duration = duration;

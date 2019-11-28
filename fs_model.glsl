@@ -30,10 +30,10 @@ void main(void){
 	// color = vec4( ka * ia , 1.0) + diffuse;
 	// color = texture(tex, fs_in.tc);
 
-	// color = texture(tex, fs_in.tc) * ( vec4( ka * ia, 1.0) + diffuse );
+	color = texture(tex, fs_in.tc) * ( vec4( ka * ia, 1.0) + diffuse );
 	// color = mix(texture(tex, fs_in.tc), texture(tex2, fs_in.tc), 0.2) + diffuse;
 
-	
+	/*
 	if( count < 10 ){
 		// color = vec4(1,0,0,1);
 		color = (texture(tex, fs_in.tc) + vec4( ka * ia , 1.0)) + diffuse;
@@ -47,5 +47,5 @@ void main(void){
 
 		color = mix(mix(texture(tex, fs_in.tc), vec4( ka * ia , 1.0), 0.2) + diffuse, vec4(0,0,1,1), trans);
 	}
-	
+	*/
 }

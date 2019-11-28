@@ -11,8 +11,8 @@ namespace _Camera {
 		/* Methods */
 	protected:
 		/* Members */
-		float cameraSpeed = 2.5f;
-		float speedModifier = 3.0f;
+		float cameraSpeed = 6;
+		float speedModifier = 4;
 
 		vec3 cameraUp;
 		vec3 front;

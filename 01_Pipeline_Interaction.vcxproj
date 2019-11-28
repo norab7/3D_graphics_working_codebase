@@ -143,7 +143,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Cube.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Object.cpp" />
@@ -155,7 +154,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="Cube.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Object.h" />
