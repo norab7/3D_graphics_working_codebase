@@ -373,6 +373,34 @@ void render() {
 	glUniform1f(glGetUniformLocation(program, "s_light[2].cutOff"), cos(radians(20.0f)));
 	glUniform1f(glGetUniformLocation(program, "s_light[2].outerCutOff"), cos(radians(25.0f)));
 
+	/* Lighting */
+	// Ceiling Lamp
+	glUniform3f(glGetUniformLocation(program, "s_light[3].position"), sin(lastFrame), 6, cos(lastFrame));
+	glUniform3f(glGetUniformLocation(program, "s_light[3].direction"), 0, -1, 0);
+	glUniform3f(glGetUniformLocation(program, "s_light[3].ambient"), 0.05, 0.05, 0.05);
+	glUniform3f(glGetUniformLocation(program, "s_light[3].diffuse"), 0.8, 0.8, 0.8);
+	glUniform3f(glGetUniformLocation(program, "s_light[3].specular"), 1, 1, 1);
+	glUniform1f(glGetUniformLocation(program, "s_light[3].constant"), 1);
+	glUniform1f(glGetUniformLocation(program, "s_light[3].linear"), 0.09);
+	glUniform1f(glGetUniformLocation(program, "s_light[3].quadratic"), 0.032);
+	glUniform1f(glGetUniformLocation(program, "s_light[3].cutOff"), cos(radians(40.0f)));
+	glUniform1f(glGetUniformLocation(program, "s_light[3].outerCutOff"), cos(radians(60.0f)));
+
+	// Investigator Torch
+
+	vec3 torch_pos(camera->position.x + sin(lastFrame) * 3, 5, -12);
+	vec3 torch_direction = camera->position - torch_pos;
+
+	glUniform3f(glGetUniformLocation(program, "s_light[4].position"), torch_pos.x, torch_pos.y, torch_pos.z);
+	glUniform3f(glGetUniformLocation(program, "s_light[4].direction"), torch_direction.x, torch_direction.y - 3, torch_direction.z);
+	glUniform3f(glGetUniformLocation(program, "s_light[4].ambient"), 1, 1, 1);
+	glUniform3f(glGetUniformLocation(program, "s_light[4].diffuse"), 1, 1, 1);
+	glUniform3f(glGetUniformLocation(program, "s_light[4].specular"), 1, 1, 1);
+	glUniform1f(glGetUniformLocation(program, "s_light[4].constant"), 1);
+	glUniform1f(glGetUniformLocation(program, "s_light[4].linear"), 0.09);
+	glUniform1f(glGetUniformLocation(program, "s_light[4].quadratic"), 0.032);
+	glUniform1f(glGetUniformLocation(program, "s_light[4].cutOff"), cos(radians(5.0f)));
+	glUniform1f(glGetUniformLocation(program, "s_light[4].outerCutOff"), cos(radians(15.0f)));
 
 	camera->update();
 	glUniform3f(glGetUniformLocation(program, "viewPos"), camera->position.x, camera->position.y, camera->position.z);
@@ -388,36 +416,7 @@ void render() {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textures.at(i));
 		glUniform1i(glGetUniformLocation(program, ("tex")), 0);
-		
-		/* Lighting */
-		// Ceiling Lamp
-		glUniform3f(glGetUniformLocation(program, "s_light[3].position"), sin(lastFrame), 6, cos(lastFrame));
-		glUniform3f(glGetUniformLocation(program, "s_light[3].direction"), 0, -1, 0);
-		glUniform3f(glGetUniformLocation(program, "s_light[3].ambient"), 0.05, 0.05, 0.05);
-		glUniform3f(glGetUniformLocation(program, "s_light[3].diffuse"), 0.8, 0.8, 0.8);
-		glUniform3f(glGetUniformLocation(program, "s_light[3].specular"), 1,1,1);
-		glUniform1f(glGetUniformLocation(program, "s_light[3].constant"), 1);
-		glUniform1f(glGetUniformLocation(program, "s_light[3].linear"), 0.09);
-		glUniform1f(glGetUniformLocation(program, "s_light[3].quadratic"), 0.032);
-		glUniform1f(glGetUniformLocation(program, "s_light[3].cutOff"), cos(radians(40.0f)));
-		glUniform1f(glGetUniformLocation(program, "s_light[3].outerCutOff"), cos(radians(60.0f)));
-
-		// Investigator Torch
-
-
-		vec3 torch_pos(camera->position.x + sin(lastFrame) * 3, 6, -12);
-		vec3 torch_direction = camera->position - torch_pos;
-
-		glUniform3f(glGetUniformLocation(program, "s_light[4].position"), torch_pos.x, torch_pos.y, torch_pos.z);
-		glUniform3f(glGetUniformLocation(program, "s_light[4].direction"), torch_direction.x, torch_direction.y - 3, torch_direction.z);
-		glUniform3f(glGetUniformLocation(program, "s_light[4].ambient"), 1,1,1);
-		glUniform3f(glGetUniformLocation(program, "s_light[4].diffuse"), 1,1,1);
-		glUniform3f(glGetUniformLocation(program, "s_light[4].specular"), 1, 1, 1);
-		glUniform1f(glGetUniformLocation(program, "s_light[4].constant"), 1);
-		glUniform1f(glGetUniformLocation(program, "s_light[4].linear"), 0.09);
-		glUniform1f(glGetUniformLocation(program, "s_light[4].quadratic"), 0.032);
-		glUniform1f(glGetUniformLocation(program, "s_light[4].cutOff"), cos(radians(5.0f)));
-		glUniform1f(glGetUniformLocation(program, "s_light[4].outerCutOff"), cos(radians(15.0f)));
+	
 
 		glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, &entities.at(i)->getMatrix()[0][0]);
 		entities.at(i)->draw();

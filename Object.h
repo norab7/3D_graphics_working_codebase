@@ -7,8 +7,6 @@ namespace _Object {
 	class Object : public Entity {
 
 	public:
-		/* Members */
-		/* Methods */
 		Mesh* mesh;
 		
 		bool meshLoaded = false;
