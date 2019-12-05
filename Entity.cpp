@@ -33,6 +33,7 @@ void Entity::translation(float x, float y, float z) {
 
 void Entity::rotation(float degrees, vec3 axis) {
 	matrix = rotate(matrix, radians(degrees), axis);
+	// update();
 }
 
 void Entity::doRotation(float degrees, vec3 axis, int duration) {

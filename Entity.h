@@ -14,6 +14,7 @@ namespace _Entity {
 		/* Members */
 		/* Methods */
 	protected:
+	public:
 		/* Members */
 
 		// Positional
@@ -40,7 +41,6 @@ namespace _Entity {
 
 		/* Methods */
 
-	public:
 		/* Members */
 		mat4 matrix;
 

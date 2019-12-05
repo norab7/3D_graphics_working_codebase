@@ -5,23 +5,21 @@ using namespace _Entity;
 
 namespace _Object {
 	class Object : public Entity {
-	private:
+
+	public:
 		/* Members */
+		/* Methods */
 		Mesh* mesh;
 		
 		bool meshLoaded = false;
-		/* Methods */
-	protected:
-		/* Members */
-		/* Methods */
-	public:
-		/* Members */
 		std::string obj;
 		std::string texture;
-		/* Methods */
+
 		Object(std::string file, std::string texture, vec3 position);
 
 		void loadMesh(std::string file);
+
+		const char* get_texture();
 
 		virtual void draw();
 		virtual void processInput(std::string key);

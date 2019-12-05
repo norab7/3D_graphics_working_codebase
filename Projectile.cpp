@@ -1,10 +1,11 @@
 #include "Projectile.h"
 using namespace _Projectile;
 
-Projectile::Projectile(std::string file,std::string texture, vec3 position, vec3 direction, float initialFrame, float duration, bool child)
+Projectile::Projectile(std::string file, std::string texture, vec3 position, vec3 direction, float initialFrame, float duration, bool child)
 	:Object(file, texture, position) {
 	this->isChild = child;
 	this->direction = direction;
+	this->path = direction;
 	this->duration = duration;
 	this->initialFrame = initialFrame;
 }
@@ -23,5 +24,5 @@ void Projectile::update(float interval) {
 	if ((this->interval - initialFrame) >= 5) {
 		active = false;
 	}
-	position += 0.05f * (-direction);
+	position += 0.05f * (-path);
 }

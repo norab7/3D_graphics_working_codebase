@@ -4,20 +4,18 @@ layout (location = 0) in vec4 position;
 layout (location = 1) in vec2 tc;
 layout (location = 2) in vec4 normals;
 
-out VS_OUT{
-	vec2 tc;
-	vec4 normals;
-	vec4 fragPos;
-} vs_out;
+out vec3 FragPos;
+out vec3 Normal;
+out vec2 TexCoords;
 
-uniform mat4 model_matrix;
-uniform mat4 view_matrix;
-uniform mat4 proj_matrix;
-
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 proj;
 
 void main(void){
-	gl_Position = proj_matrix * view_matrix * model_matrix * position;
-	vs_out.tc = tc;
-	vs_out.normals = normals;
-	vs_out.fragPos = model_matrix * position;
+	FragPos = vec3(model * position);	
+	Normal = mat3(transpose(inverse(model))) * vec3(normals.xyz);
+	TexCoords = tc;
+	
+	gl_Position = proj * view * model  * position;
 }

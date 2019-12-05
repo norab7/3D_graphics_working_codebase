@@ -7,8 +7,8 @@
 // Prebuild Main Functions
 void setupRender();
 void startup();
-void update(GLfloat currentTime);
-void render(GLfloat currentTime);
+void update();
+void render();
 void endProgram();
 
 // HELPER FUNCTIONS OPENGL
@@ -27,17 +27,42 @@ static void APIENTRY openGLDebugCallback(GLenum source,
 // Objects
 _Camera::Camera * camera = new _Camera::Camera(vec3(0,5,0),vec3(0,5,-1));
 
-// Individual Object Classes allows for individual object processInput methods
-//_Object::Object* cube = new _Object::Object("rock_large.obj", vec3(3, 3, 0));
-//_Object::Object* chair = new _Object::Object("rock_large.obj", vec3(-3, -3, 0));
-//_Object::Object* lightsource = new _Object::Object("rock_large.obj", vec3(0, 0, 0));
-// _Object::Object* road = new _Object::Object("Road.obj", vec3(0, 0, 0));
+std::string dir_textures = "textures/";
 
-std::vector<Entity*> entities;
-std::vector<_Projectile::Projectile*> projectiles;
+vector<GLuint> textures = {};
+vector<Object*> entities;
+vector<Object> inv_entities;
 
-GLuint texture, texture2;
-string texname = "textures/cork.jpg", texname2 = "textures/cork.png"; // cubeTexture.jpg, cork.png, awesomeface.png
+// Comment and Uncomment ICE_LAKE and THE_ROOM respectfully to choice!! 
+
+/* ICE_LAKE */
+//bool ice_lake = true;
+ //std::string dir_objects = "single_blends/";
+ //vector<string> object_names = { "book", "crate","desk","drinks_can","filecabinet_tall","fire","Ice", "lamp_small","lamp_standing","piano","shack", "sofa","stool", "table_single","tv" };
+ //vector<vec3> object_positions = { {7,-2,5},{7,0,5},{-5,0,12},{6.5,-2,5},{-8.5,0,12},{2,0,2},{0,0,0},{7.5,-2,5.5},{-2,0,12},{7,0,0},{0,0,-5},{-7,0,0},{2,0,0},{0,0,10},{0,-2,10} };
+ //vector<vec3> object_pos_invert = { {-7,-2,5},{-7,0,5},{5,0,12},{-6.5,-2,5},{8.5,0,12},{-2,0,2},{0,10000,0},{-7.5,-2,5.5},{2,0,12},{-7,0,0},{0,0,-5},{7,0,0},{-2,0,0},{0,0,10},{0,-2,10} };
+/* ICE_LAKE */
+
+/* THE_ROOM */
+bool ice_lake = false;
+std::string dir_objects = "the_room/";
+vector<string> object_names = { 
+	"ashtray",
+	"book","book001","book002","book003","book004","book005","book006","book007","book008","book009","book010",
+	"crate","desk",
+	"drinks_can","drinks_can001","drinks_can002",
+	"filecabinet_tall","lamp_small","lamp_standing","piano", "pipe", "poster_alyx","room",
+	"sofa","sofa001",
+	"table_single", "table_single001","table_single002",
+	"tv",
+	"window","window001","window002","window003"};
+vector<vec3> object_positions = {};
+vector<vec3> object_pos_invert = {};
+/* THE_ROOM */
+
+vector<_Projectile::Projectile*> projectiles;
+
+float spot_light_active = 1.0f;
 
 int main() {
 	std::cout << "Starting Up!" << std::endl << std::endl;
@@ -48,23 +73,25 @@ int main() {
 	debugGL();
 	setupRender();	
 
-	int numEntities = 10;
-	int multiplier = 4;
-	int actual = numEntities - 1;
+	int i;
+	for (i = 0; i < object_names.size(); i++) {
+		std::string object_string = dir_objects + object_names.at(i) + ".obj";
+		std::string texture_string = dir_textures + object_names.at(i) + ".jpg";
 
-	int i = 0, j = 0, k = 0;
-	entities.push_back(new _Object::Object("objects/theroom.obj", "textures/cork.jpg", vec3(0,0,0)));
+		// Object *item = new _Object::Object(object_string, texture_string.c_str(), object_positions.at(i));
+		entities.push_back(new _Object::Object(object_string, texture_string.c_str(), (object_positions.size() < 1) ? vec3(0,0,0): object_positions.at(i)));
+	}
+	if (ice_lake) {
+		for (i = 0; i < object_names.size(); i++) {
+			std::string object_string = dir_objects + object_names.at(i) + ".obj";
+			std::string texture_string = dir_textures + object_names.at(i) + ".jpg";
 
-	//for (int i = 0; i < numEntities; i++) {
-	//	for (int j = 0; j < numEntities; j++) {
-	//		for (int k = 0; k < numEntities; k++){
+			Object* item = new _Object::Object(object_string, texture_string.c_str(), (object_positions.size() < 1) ? vec3(0, 0, 0) : object_positions.at(i));
+			item->worldUp = (i != 6) ? vec3(0, -1, 0) : vec3(0, 1, 0);
+			inv_entities.push_back(*item);
+		}
+	}
 
-	//			//if (!(i == 0 || j == 0 || k == 0 || i == actual || j == actual || k == actual)) { continue; }
-	//			if (i == 0 && j == 0 && k == 0) { continue; }
-	//			entities.push_back(new _Object::Object("cube_uv.obj", vec3(i * multiplier, j * multiplier, k * multiplier)));
-	//		}
-	//	}
-	//}
 
 	// Setup all necessary information for startup (aka. load texture, shaders, models, etc).
 	startup();		
@@ -76,8 +103,8 @@ int main() {
 		deltaTime = currentFrame - lastFrame;					// Calculate delta time
 		lastFrame = currentFrame;								// Save for next frame calculations.
 		glfwPollEvents();									// poll callbacks
-		update(currentFrame);								// update (physics, animation, structures, etc)
-		render(currentFrame);								// call render function.
+		update();											// update (physics, animation, structures, etc)
+		render();								// call render function.
 
 		glfwSwapBuffers(window);							// swap buffers (avoid flickering and tearing)
 
@@ -181,27 +208,25 @@ void startup() {
 	glLinkProgram(program);
 	glUseProgram(program);
 
+	int i;
+	for (i = 0; i < entities.size(); i++) {
+		GLuint tex;
+		textures.push_back(tex);
 
-	// TODO: Textures can go internal to the Objects
-	// texture 1
+		glGenTextures(1, &textures.at(i));
+		glBindTexture(GL_TEXTURE_2D, textures.at(i));
 
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	int width, height, nrChannels;
-	stbi_set_flip_vertically_on_load(true);
-	unsigned char* data = stbi_load(texname.c_str(), &width, &height, &nrChannels, 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(data);
+		int width, height, nrChannels;
+		stbi_set_flip_vertically_on_load(true);
+		
+		std::cout << "texture output:: " << entities.at(i)->get_texture() << std::endl;
+		unsigned char* data = stbi_load(entities.at(i)->get_texture(), &width, &height, &nrChannels, 0);
 
-	//// texture 2
-	//glGenTextures(1, &texture2);
-	//glBindTexture(GL_TEXTURE_2D, texture2);
-	//data = stbi_load(texname2.c_str(), &width, &height, &nrChannels, 0);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	//glGenerateMipmap(GL_TEXTURE_2D);
-	//stbi_image_free(data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		stbi_image_free(data);
 
+	}
 
 	// A few optimizations.
 	glFrontFace(GL_CCW);
@@ -215,18 +240,36 @@ void startup() {
 	aspect = (float) windowWidth / (float) windowHeight;
 	proj_matrix = glm::perspective(glm::radians(fovy), aspect, 0.1f, 1000.0f);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glUniform1i(glGetUniformLocation(program, "tex"), 0);
+}
 
-	//glActiveTexture(GL_TEXTURE0 + 1);
-	//glBindTexture(GL_TEXTURE_2D, texture2);
-	//glUniform1i(glGetUniformLocation(program, "tex2"), 1);
+void update() {
+	
+	// TODO: Change processInput to accept the key, not a string
+	// TODO: Change to use Array of Entities from Entity class
+	// TODO: Go through only entites in array that in view
+	// TODO: Create inheritance conversion for camera to entity
+	
+	camera->setDeltaTime(deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) { camera->processInput("shift"); }
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) { camera->processInput("space"); }
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) { camera->processInput("ctrl"); }
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { camera->processInput("w"); }
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { camera->processInput("s"); }
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { camera->processInput("a"); }
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { camera->processInput("d"); }
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) { camera->processInput("left"); }
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) { camera->processInput("right"); }
+
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) { spot_light_active *= -1.0f; }
+
+	for (Object *o : entities) {
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) { o->processInput("e"); }
+
+	}
 
 }
 
-
-void render(GLfloat currentTime) {
+void render() {
 
 	glViewport(0, 0, windowWidth, windowHeight);
 
@@ -238,7 +281,6 @@ void render(GLfloat currentTime) {
 	static const GLfloat one = 1.0f; 
 	glClearBufferfv(GL_DEPTH, 0, &one);
 
-
 	// Enable blend
 	glEnable(GL_BLEND); 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -246,36 +288,148 @@ void render(GLfloat currentTime) {
 	// Use our shader programs
 	glUseProgram(program);
 
-	glUniform4f(glGetUniformLocation(program,"lightPosition"), sin(lastFrame)*100, 1, cos(lastFrame)*100, 1.0);
-	glUniformMatrix4fv(glGetUniformLocation(program, "proj_matrix"), 1, GL_FALSE, &proj_matrix[0][0]);
+
+	// Light and Material values generated via following LearnOpenGL tutorials
+	// TODO: Turn into light_object for quick simple calls
+	/* Materials */
+	glUniform1f(glGetUniformLocation(program, "material.shininess"), 32);
+
+	// Directional Light
+	glUniform3f(glGetUniformLocation(program, "d_light.direction"), -0.2, -10, -0.2);
+	glUniform3f(glGetUniformLocation(program, "d_light.ambient"), 0,0,0);
+	glUniform3f(glGetUniformLocation(program, "d_light.diffuse"), 0, 0, 0);
+	glUniform3f(glGetUniformLocation(program, "d_light.specular"), 0, 0, 0);
+
+	float flicker = (rand() % 100 < 95) ? 0.1 : 0.3;
+	float fire_flicker = ((((float)(rand() % 50)) + 30) / 100.0);
+	fire_flicker = (ice_lake) ? fire_flicker : flicker;
+
+	// Point Light 1 - TV
+	glUniform3f(glGetUniformLocation(program, "p_light[0].position"), -3.25,3,3.5);
+	glUniform3f(glGetUniformLocation(program, "p_light[0].ambient"), 0.005, 0.005, 0.005);
+	glUniform3f(glGetUniformLocation(program, "p_light[0].diffuse"), fire_flicker, flicker, flicker);
+	glUniform3f(glGetUniformLocation(program, "p_light[0].specular"), 0,0,0);
+	glUniform1f(glGetUniformLocation(program, "p_light[0].constant"), 0.01);
+	glUniform1f(glGetUniformLocation(program, "p_light[0].linear"), 0.09);
+	glUniform1f(glGetUniformLocation(program, "p_light[0].quadratic"), 0.032);
+
+	// Point Light 2 - Standing Lamp
+	glUniform3f(glGetUniformLocation(program, "p_light[1].position"), 4.7, 6, -5.75);
+	glUniform3f(glGetUniformLocation(program, "p_light[1].ambient"), 0.05, 0.05, 0.05);
+	glUniform3f(glGetUniformLocation(program, "p_light[1].diffuse"), 0.1, 0.1, 0.1);
+	glUniform3f(glGetUniformLocation(program, "p_light[1].specular"), 0,0,0);
+	glUniform1f(glGetUniformLocation(program, "p_light[1].constant"), 0.1);
+	glUniform1f(glGetUniformLocation(program, "p_light[1].linear"), 0.09);
+	glUniform1f(glGetUniformLocation(program, "p_light[1].quadratic"), 0.032);
+
+	// Point Light 3 - Small Lamp
+	glUniform3f(glGetUniformLocation(program, "p_light[2].position"), 4.7, 4, 3.25);
+	glUniform3f(glGetUniformLocation(program, "p_light[2].ambient"), 0.005, 0.005, 0.005);
+	glUniform3f(glGetUniformLocation(program, "p_light[2].diffuse"), 0.01, 0.01, 0.01);
+	glUniform3f(glGetUniformLocation(program, "p_light[2].specular"), 0, 0, 0);
+	glUniform1f(glGetUniformLocation(program, "p_light[2].constant"), 0.01);
+	glUniform1f(glGetUniformLocation(program, "p_light[2].linear"), 0.09);
+	glUniform1f(glGetUniformLocation(program, "p_light[2].quadratic"), 0.032);
+
+	// Spot Light
+	float spot_light_flash = (rand() % 100 < 95) ? 1.0 : 0.0;
+
+	glUniform1f(glGetUniformLocation(program, "spot_light_flash"), spot_light_flash);
+	glUniform1f(glGetUniformLocation(program, "spot_light_active"), spot_light_active);
+
+	// Torch
+	glUniform3f(glGetUniformLocation(program, "s_light[0].position"), camera->position.x, camera->position.y + (sin(lastFrame)/ 10), camera->position.z);
+	glUniform3f(glGetUniformLocation(program, "s_light[0].direction"), camera->getFront().x, camera->getFront().y, camera->getFront().z);
+	glUniform3f(glGetUniformLocation(program, "s_light[0].ambient"), 0,0,0);
+	glUniform3f(glGetUniformLocation(program, "s_light[0].diffuse"), 1, 1, 1);
+	glUniform3f(glGetUniformLocation(program, "s_light[0].specular"), 1, 1, 1);
+	glUniform1f(glGetUniformLocation(program, "s_light[0].constant"), 1);
+	glUniform1f(glGetUniformLocation(program, "s_light[0].linear"), 0.09);
+	glUniform1f(glGetUniformLocation(program, "s_light[0].quadratic"), 0.032);
+	glUniform1f(glGetUniformLocation(program, "s_light[0].cutOff"), cos(radians(15.0f)));
+	glUniform1f(glGetUniformLocation(program, "s_light[0].outerCutOff"), cos(radians(25.0f)));
+
+	// Standing Lamp
+	glUniform3f(glGetUniformLocation(program, "s_light[1].position"), 4.7, 5, -5.75);
+	glUniform3f(glGetUniformLocation(program, "s_light[1].direction"), 0, -1, 0);
+	glUniform3f(glGetUniformLocation(program, "s_light[1].ambient"), 0, 0, 0);
+	glUniform3f(glGetUniformLocation(program, "s_light[1].diffuse"), 1, 1, 1);
+	glUniform3f(glGetUniformLocation(program, "s_light[1].specular"), 1, 1, 1);
+	glUniform1f(glGetUniformLocation(program, "s_light[1].constant"), 1);
+	glUniform1f(glGetUniformLocation(program, "s_light[1].linear"), 0.09);
+	glUniform1f(glGetUniformLocation(program, "s_light[1].quadratic"), 0.032);
+	glUniform1f(glGetUniformLocation(program, "s_light[1].cutOff"), cos(radians(40.0f)));
+	glUniform1f(glGetUniformLocation(program, "s_light[1].outerCutOff"), cos(radians(45.0f)));
+
+	// Small Lamp
+	glUniform3f(glGetUniformLocation(program, "s_light[2].position"), 4.7, 4, 3.25);
+	glUniform3f(glGetUniformLocation(program, "s_light[2].direction"), 0, -1, 0);
+	glUniform3f(glGetUniformLocation(program, "s_light[2].ambient"), 0, 0, 0);
+	glUniform3f(glGetUniformLocation(program, "s_light[2].diffuse"), 0.5, 0.5, 0.5);
+	glUniform3f(glGetUniformLocation(program, "s_light[2].specular"), 0,0,0);
+	glUniform1f(glGetUniformLocation(program, "s_light[2].constant"), 1);
+	glUniform1f(glGetUniformLocation(program, "s_light[2].linear"), 0.09);
+	glUniform1f(glGetUniformLocation(program, "s_light[2].quadratic"), 0.032);
+	glUniform1f(glGetUniformLocation(program, "s_light[2].cutOff"), cos(radians(20.0f)));
+	glUniform1f(glGetUniformLocation(program, "s_light[2].outerCutOff"), cos(radians(25.0f)));
+
 
 	camera->update();
-	glUniformMatrix4fv(glGetUniformLocation(program, "view_matrix"), 1, GL_FALSE, &camera->getMatrix()[0][0]);
+	glUniform3f(glGetUniformLocation(program, "viewPos"), camera->position.x, camera->position.y, camera->position.z);
+	glUniformMatrix4fv(glGetUniformLocation(program, "proj"), 1, GL_FALSE, &proj_matrix[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, &camera->getMatrix()[0][0]);
 
-	//road->update();
-	//glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_FALSE, &road->getMatrix()[0][0]);
-	//road->draw();
-
-	GLfloat ka = 0.25f;//((float) (rand() % 100) / 100);
-	glm::vec3 ia = vec3(0.5, 0.5, 0.5);//glm::vec3(((float)(rand() % 100) / 100), ((float)(rand() % 100) / 100), ((float)(rand() % 100) / 100));
-	glUniform1f(glGetUniformLocation(program, "ka"), ka);
-	glUniform3f(glGetUniformLocation(program, "ia"), ia.r, ia.g, ia.b);
-
-
-
+	// Main Objects
 	for (int i = 0; i < entities.size(); i++) {
+		glUniform1f(glGetUniformLocation(program, "count"), i);
 		entities.at(i)->update(lastFrame);
 
-		// textures
-		float trans = ((float)(i % 10)) / 10 ;
-		glUniform1f(glGetUniformLocation(program, "count"), i);
-		glUniform1f(glGetUniformLocation(program, "trans"), trans);
-		// ----
+		/* Textures */
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textures.at(i));
+		glUniform1i(glGetUniformLocation(program, ("tex")), 0);
+		
+		/* Lighting */
+		// Ceiling Lamp
+		glUniform3f(glGetUniformLocation(program, "s_light[3].position"), sin(lastFrame), 6, cos(lastFrame));
+		glUniform3f(glGetUniformLocation(program, "s_light[3].direction"), 0, -1, 0);
+		glUniform3f(glGetUniformLocation(program, "s_light[3].ambient"), 0.05, 0.05, 0.05);
+		glUniform3f(glGetUniformLocation(program, "s_light[3].diffuse"), 0.8, 0.8, 0.8);
+		glUniform3f(glGetUniformLocation(program, "s_light[3].specular"), 1,1,1);
+		glUniform1f(glGetUniformLocation(program, "s_light[3].constant"), 1);
+		glUniform1f(glGetUniformLocation(program, "s_light[3].linear"), 0.09);
+		glUniform1f(glGetUniformLocation(program, "s_light[3].quadratic"), 0.032);
+		glUniform1f(glGetUniformLocation(program, "s_light[3].cutOff"), cos(radians(40.0f)));
+		glUniform1f(glGetUniformLocation(program, "s_light[3].outerCutOff"), cos(radians(60.0f)));
 
-		// entities.at(i)->rotation(rand() % 5, vec3(sin(i), 0, cos(i))); // shakey shakey
-		glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_FALSE, &entities.at(i)->getMatrix()[0][0]);
+		// Investigator Torch
+
+
+		vec3 torch_pos(camera->position.x + sin(lastFrame) * 3, 6, -12);
+		vec3 torch_direction = camera->position - torch_pos;
+
+		glUniform3f(glGetUniformLocation(program, "s_light[4].position"), torch_pos.x, torch_pos.y, torch_pos.z);
+		glUniform3f(glGetUniformLocation(program, "s_light[4].direction"), torch_direction.x, torch_direction.y - 3, torch_direction.z);
+		glUniform3f(glGetUniformLocation(program, "s_light[4].ambient"), 1,1,1);
+		glUniform3f(glGetUniformLocation(program, "s_light[4].diffuse"), 1,1,1);
+		glUniform3f(glGetUniformLocation(program, "s_light[4].specular"), 1, 1, 1);
+		glUniform1f(glGetUniformLocation(program, "s_light[4].constant"), 1);
+		glUniform1f(glGetUniformLocation(program, "s_light[4].linear"), 0.09);
+		glUniform1f(glGetUniformLocation(program, "s_light[4].quadratic"), 0.032);
+		glUniform1f(glGetUniformLocation(program, "s_light[4].cutOff"), cos(radians(5.0f)));
+		glUniform1f(glGetUniformLocation(program, "s_light[4].outerCutOff"), cos(radians(15.0f)));
+
+		glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, &entities.at(i)->getMatrix()[0][0]);
 		entities.at(i)->draw();
+
+		if (ice_lake) {
+			inv_entities.at(i).update(lastFrame);
+			glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, &inv_entities.at(i).getMatrix()[0][0]);
+			inv_entities.at(i).draw();
+		}
 	}
+
+
 	for (int i = 0; i < projectiles.size(); i++) {
 		if (!projectiles.at(i)->active) {
 			projectiles.at(i)->kill(projectiles.at(i));
@@ -283,7 +437,7 @@ void render(GLfloat currentTime) {
 			continue;
 		} 
 		projectiles.at(i)->update(lastFrame);
-		glUniformMatrix4fv(glGetUniformLocation(program, "model_matrix"), 1, GL_FALSE, &projectiles.at(i)->getMatrix()[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, &projectiles.at(i)->getMatrix()[0][0]);
 		projectiles.at(i)->draw();
 	}
 }
@@ -304,32 +458,23 @@ void onKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mo
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-void update(GLfloat currentTime) {
-	
-	// TODO: Change processInput to accept the key, not a string
-	// TODO: Change to use Array of Entities from Entity class
-	// TODO: Go through only entites in array that in view
-	
-	camera->setDeltaTime(deltaTime);
-	
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) { camera->processInput("shift"); }
-	
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) { camera->processInput("space"); }
-	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) { camera->processInput("ctrl"); }
-
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { camera->processInput("w"); }
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { camera->processInput("s"); }
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { camera->processInput("a"); }
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { camera->processInput("d"); }
-	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) { camera->processInput("left"); }
-	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) { camera->processInput("right"); }
-
-}
 
 void onMouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
 		std::cout << "mouseButton1" << std::endl;
-		projectiles.push_back(new _Projectile::Projectile("p.obj", "cork.png",(-camera->getPosition()) - (camera->getFront() * 2.0f), camera->getFront(), lastFrame, 1000));
+
+		int i;
+		for (i = 0; i < entities.size(); i++) {
+			if (entities.at(i)->texture.find("tv") != string::npos) {
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, textures.at(i));
+				glUniform1i(glGetUniformLocation(program, ("tex")), 0);
+			}
+		}
+
+		projectiles.push_back(new _Projectile::Projectile("single_blends/tv.obj", "textures/tv.jpg", (-camera->getPosition()) - (camera->getFront() * 2.0f), camera->getFront(), lastFrame, 1000));
+		projectiles.at(projectiles.size() - 1)->target = camera->getFront();
+
 	}
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {}
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_3) == GLFW_PRESS) {}
@@ -433,7 +578,7 @@ void  checkErrorShader(GLuint shader) {
 	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
 
 	// Init a string for it
-	std::vector<GLchar> errorLog(maxLength);
+	vector<GLchar> errorLog(maxLength);
 
 	if (maxLength > 1) {
 		// Get the log file
@@ -444,75 +589,3 @@ void  checkErrorShader(GLuint shader) {
 	}
 }
 
-
-/*
-Torch to be used when walking around
-- head bob
-- delay on rotation to camera
-
-Spot Lights
-Sun
-
-Internal and External Structures
-
-Lights behind grids for shadowed areas
-- rotating
-- translating
-
-Train track with train going by
-
-
-
-
-*** DEFORMATION ***
-7 days to die
-- move vectex z axis
-- adjacent vertices out of bounds then create additional.
-
-*/
-
-
-/* FRAGMENT
-#version 430 core
-
-out vec4 color;
-
-in VS_OUT
-{
-	vec2 tc;
-	vec3 normals;
-} fs_in;
-
-uniform mat4 model_matrix;
-
-void main(void){
-  color = vec4(1.0,1.0,1.0,1.0);
-  //color = vec4(fs_in.normals, 1.0);
-}
-*/
-
-/* VERTEX 
-#version 430 core
-
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec2 tc;
-layout (location = 2) in vec3 normals;
-
-out VS_OUT {
-	vec2 tc;
-	vec3 normals;
-} vs_out;
-
-uniform mat4 model_matrix;
-uniform mat4 view_matrix;
-uniform mat4 proj_matrix;
-
-void main(void){
-	gl_Position = proj_matrix * view_matrix * model_matrix * vec4(position, 1.0);
-
-	vs_out.tc = tc;
-	vs_out.normals = normals;
-}
-
-
-*/

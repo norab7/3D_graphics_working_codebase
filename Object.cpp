@@ -1,16 +1,22 @@
 #include "Object.h"
 using namespace _Object;
 
-Object::Object(std::string obj, std::string texture, vec3 position) {
+Object::Object(std::string obj, std::string texture, vec3 position):Entity(position) {
+	mesh = new Mesh();
+
 	this->obj = obj;
 	this->texture = texture;
-	this->position = position;
+	// this->position = position;
 
 }
 
-void Object::loadMesh(std::string file) {
-	this->obj = file;
-	mesh->LoadModel(file);
+void Object::loadMesh(std::string obj) {
+	this->obj = obj;
+	mesh->LoadModel(obj);
+}
+
+const char* Object::get_texture() {
+	return texture.c_str();
 }
 
 void Object::draw() {
@@ -22,7 +28,9 @@ void Object::draw() {
 }
 
 void Object::processInput(std::string key) {
-	// Blank
+	if (key == "e") { 
+		position.y += sin(interval*10) / 10;
+	}
 }
 
 void Object::processMouseInput(int button) {

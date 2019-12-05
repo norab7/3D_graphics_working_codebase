@@ -25,6 +25,7 @@
 
 using namespace std;
 using namespace glm;
+using std::vector;
 
 /* Members */
 GLFWwindow * window;
